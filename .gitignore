@@ -1,0 +1,9 @@
+# data van een lokaal draaiende instantie
+kliekjes/data/
+data/
+
+# macOS
+.DS_Store
+._*
+.Spotlight-V100
+.Trashes

@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0F2230">
+<title>Kliekjes</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="img/icon-192.png">
+<link rel="apple-touch-icon" href="img/icon-192.png">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+
+<div id="offline" class="offline" hidden>Geen verbinding — je ziet de laatst opgehaalde lijst.</div>
+
+<section id="boot-error" class="gate" hidden>
+  <div class="gate-inner">
+    <h1>Kliekjes start niet</h1>
+    <p class="gate-sub" id="boot-error-msg"></p>
+    <button class="btn btn-primary" onclick="location.reload(true)">Opnieuw laden</button>
+  </div>
+</section>
+
+<script>
+/* Zonder dit levert een fout tijdens het opstarten een leeg scherm op. */
+window.addEventListener('error', function (e) {
+  var box = document.getElementById('boot-error');
+  if (!box || !box.hidden) return;
+  box.hidden = false;
+  document.getElementById('boot-error-msg').textContent =
+    (e.message || ('Kon ' + (e.target && e.target.src ? e.target.src.split('/').pop() : 'een bestand') + ' niet laden'));
+}, true);
+</script>
+
+<!-- ============================================================= login -->
+<section id="login" class="gate" hidden>
+  <div class="gate-inner">
+    <div class="gate-mark" aria-hidden="true"></div>
+    <h1>Kliekjes</h1>
+    <p class="gate-sub">Wat ligt er in de vriezer?</p>
+    <input id="login-pass" type="password" inputmode="text" autocomplete="current-password" placeholder="Wachtwoord">
+    <input id="login-who" type="text" autocomplete="name" placeholder="Je naam">
+    <button id="login-btn" class="btn btn-primary">Openen</button>
+    <p id="login-err" class="err" hidden></p>
+  </div>
+</section>
+
+<!-- ============================================================== app -->
+<main id="app" hidden>
+  <header class="top">
+    <div class="top-row">
+      <h1 class="wordmark">Kliekjes</h1>
+      <button id="tab-history" class="ghost-btn" aria-label="Geschiedenis">Geschiedenis</button>
+    </div>
+    <div class="stats" id="stats"></div>
+    <input id="search" type="search" placeholder="Zoeken" autocomplete="off">
+  </header>
+
+  <ul id="list" class="list"></ul>
+
+  <div id="empty" class="empty" hidden>
+    <p class="empty-title">De vriezer is leeg.</p>
+    <p>Maak een foto van je eerste kliekje.</p>
+  </div>
+
+  <button id="add-btn" class="fab" aria-label="Kliekje toevoegen">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14"/></svg>
+    <span>Kliekje</span>
+  </button>
+</main>
+
+<!-- =========================================================== history -->
+<section id="history" class="sheet" hidden>
+  <div class="sheet-head">
+    <button class="ghost-btn" data-close>Terug</button>
+    <h2>Geschiedenis</h2>
+    <span></span>
+  </div>
+  <div class="sheet-body">
+    <h3 class="sub">Op zolder gezet</h3>
+    <ul id="archived" class="list list-flat"></ul>
+    <h3 class="sub">Laatste acties</h3>
+    <ul id="events" class="log"></ul>
+    <p id="version" class="version"></p>
+  </div>
+</section>
+
+<!-- ============================================================ editor -->
+<section id="editor" class="sheet" hidden>
+  <div class="sheet-head">
+    <button class="ghost-btn" data-close>Annuleren</button>
+    <h2 id="editor-title">Nieuw kliekje</h2>
+    <button id="save-btn" class="ghost-btn strong">Bewaren</button>
+  </div>
+  <div class="sheet-body">
+    <div class="shot" id="shot">
+      <img id="photo-preview" alt="" hidden>
+      <span id="photo-hint" class="shot-hint">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 8.5h4l1.5-2.5h7L17 8.5h4v11H3z"/><circle cx="12" cy="14" r="3.5"/></svg>
+        Nog geen foto
+      </span>
+    </div>
+    <div class="photo-actions">
+      <button id="btn-camera" class="btn btn-secondary" type="button">Foto maken</button>
+      <button id="btn-gallery" class="btn btn-secondary" type="button">Uit galerij</button>
+    </div>
+    <input id="photo-camera" type="file" accept="image/*" capture="environment" hidden>
+    <input id="photo-gallery" type="file" accept="image/*" hidden>
+    <button id="photo-clear" class="linkish" hidden>Foto verwijderen</button>
+
+    <label class="field">
+      <span>Wat is het?</span>
+      <input id="f-name" type="text" placeholder="Erwtensoep" autocomplete="off">
+    </label>
+
+    <div class="field-row">
+      <label class="field">
+        <span>Porties</span>
+        <input id="f-portions" type="number" min="0" max="999" inputmode="numeric" value="2">
+      </label>
+      <label class="field">
+        <span>Waar</span>
+        <input id="f-location" type="text" placeholder="Lade 2" autocomplete="off">
+      </label>
+    </div>
+
+    <div class="field-row">
+      <label class="field">
+        <span>Ingevroren</span>
+        <input id="f-frozen" type="date">
+      </label>
+      <label class="field">
+        <span>Beste voor</span>
+        <input id="f-best" type="date">
+      </label>
+    </div>
+
+    <div class="chips" id="quick-best"></div>
+
+    <label class="field">
+      <span>Notitie</span>
+      <textarea id="f-notes" rows="2" placeholder="Pittig, met chorizo"></textarea>
+    </label>
+
+    <button id="delete-btn" class="btn btn-danger" hidden>Verwijderen</button>
+  </div>
+</section>
+
+<!-- ============================================================ detail -->
+<section id="detail" class="sheet" hidden>
+  <div class="sheet-head">
+    <button class="ghost-btn" data-close>Terug</button>
+    <h2></h2>
+    <button id="edit-btn" class="ghost-btn strong">Wijzigen</button>
+  </div>
+  <div class="sheet-body" id="detail-body"></div>
+</section>
+
+<div id="toast" class="toast" hidden></div>
+
+<!-- ============================================================ camera -->
+<section id="camera" class="camera" hidden>
+  <video id="cam-video" playsinline autoplay muted></video>
+  <div class="cam-bar">
+    <button id="cam-cancel" class="ghost-btn strong">Annuleren</button>
+    <button id="cam-shoot" class="cam-shoot" aria-label="Foto maken"></button>
+    <button id="cam-flip" class="ghost-btn strong">Draaien</button>
+  </div>
+</section>
+
+<script src="app.js"></script>
+</body>
+</html>

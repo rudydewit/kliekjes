@@ -1,0 +1,13 @@
+services:
+  kliekjes:
+    build: .
+    container_name: kliekjes
+    restart: unless-stopped
+    ports:
+      - "3011:3000"
+    environment:
+      # Kies hier jullie gezamenlijke wachtwoord.
+      APP_PASSWORD: "verander-dit-wachtwoord"
+      TZ: "Europe/Amsterdam"
+    volumes:
+      - ./data:/data
