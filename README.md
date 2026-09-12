@@ -61,4 +61,3 @@ kliekjes/
   public/                frontend
   docker-compose.yml     los van Home Assistant draaien
 ```
-# kliekjes

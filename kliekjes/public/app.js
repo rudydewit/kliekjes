@@ -440,6 +440,44 @@ $('#tab-history').addEventListener('click', async () => {
   } catch { /* offline: laat de lijst leeg */ }
 });
 
+/* ------------------------------------------------------- back-up ------ */
+
+$('#export-btn').addEventListener('click', async () => {
+  try {
+    const res = await fetch('api/export');
+    if (!res.ok) throw new Error('Exporteren lukte niet.');
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `kliekjes-${todayStr()}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+    toast('Bestand gedownload.');
+  } catch (err) { toast(err.message); }
+});
+
+$('#import-btn').addEventListener('click', () => $('#import-file').click());
+
+$('#import-file').addEventListener('change', async (e) => {
+  const file = e.target.files[0];
+  e.target.value = '';
+  if (!file) return;
+  try {
+    const data = JSON.parse(await file.text());
+    const res = await api('api/import', { method: 'POST', body: data });
+    close(el.history);
+    await refresh();
+    toast(res.added
+      ? `${res.added} kliekjes toegevoegd${res.skipped ? `, ${res.skipped} stonden er al` : ''}.`
+      : 'Alles stond er al in.');
+  } catch (err) {
+    toast(err instanceof SyntaxError ? 'Dit is geen geldig exportbestand.' : err.message);
+  }
+});
+
 /* ----------------------------------------------------------------- login */
 
 $('#login-btn').addEventListener('click', async () => {

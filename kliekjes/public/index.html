@@ -82,6 +82,12 @@ window.addEventListener('error', function (e) {
     <ul id="archived" class="list list-flat"></ul>
     <h3 class="sub">Laatste acties</h3>
     <ul id="events" class="log"></ul>
+    <h3 class="sub">Back-up</h3>
+    <div class="photo-actions">
+      <button id="export-btn" class="btn btn-secondary" type="button">Exporteren</button>
+      <button id="import-btn" class="btn btn-secondary" type="button">Importeren</button>
+    </div>
+    <input id="import-file" type="file" accept="application/json,.json" hidden>
     <p id="version" class="version"></p>
   </div>
 </section>

@@ -1,5 +1,13 @@
 # Wijzigingen
 
+## 1.0.9
+
+- Exporteren en importeren onder Geschiedenis. Eén bestand met alle kliekjes, foto's
+  en historie — bedoeld om over te stappen naar een andere installatie, en verder
+  bruikbaar als losse back-up.
+- Importeren slaat kliekjes over die er al staan, dus twee keer importeren kan geen
+  kwaad.
+
 ## 1.0.8
 
 - "Foto maken" opent nu de camera in de app zelf, met live beeld, een sluiterknop

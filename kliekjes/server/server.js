@@ -10,8 +10,8 @@ const PORT = Number(process.env.PORT || 3000);
 const DATA_DIR = process.env.DATA_DIR || '/data';
 const PHOTO_DIR = path.join(DATA_DIR, 'photos');
 const PUBLIC_DIR = path.join(__dirname, '..', 'public');
-const MAX_BODY = 12 * 1024 * 1024;
-const VERSION = '1.0.8';
+const MAX_BODY = 64 * 1024 * 1024;
+const VERSION = '1.0.9';
 
 // Home Assistant stuurt ingress-verkeer altijd vanaf dit interne adres.
 const INGRESS_IP = process.env.TRUSTED_INGRESS_IP || '172.30.32.2';
@@ -84,6 +84,11 @@ const q = {
   unarchive: db.prepare('UPDATE items SET archived_at=NULL, portions=?, updated_at=? WHERE id=?'),
   deleteItem: db.prepare('DELETE FROM items WHERE id=?'),
   addEvent: db.prepare('INSERT INTO events (item_id,item_name,action,amount,who,at) VALUES (?,?,?,?,?,?)'),
+  importItem: db.prepare(`INSERT INTO items
+    (id,name,portions,location,frozen_on,best_before,notes,photo,created_by,created_at,updated_at,archived_at)
+    VALUES (?,?,?,?,?,?,?,?,?,?,?,?)`),
+  allItems: db.prepare('SELECT * FROM items'),
+  allEvents: db.prepare('SELECT * FROM events ORDER BY id ASC'),
   listEvents: db.prepare('SELECT * FROM events ORDER BY id DESC LIMIT 100'),
 };
 
@@ -345,6 +350,58 @@ const server = http.createServer(async (req, res) => {
         q.addEvent.run(id, item.name, 'verwijderd', null, str(url.searchParams.get('who')), now());
         return send(res, 200, { ok: true });
       }
+    }
+
+    /* --- alles eruit / alles erin -------------------------------------- */
+    if (p === '/api/export' && req.method === 'GET') {
+      const items = q.allItems.all();
+      const photos = {};
+      for (const it of items) {
+        if (!it.photo) continue;
+        try {
+          photos[it.photo] = fs.readFileSync(path.join(PHOTO_DIR, it.photo)).toString('base64');
+        } catch { /* foto weg: de rest gaat gewoon mee */ }
+      }
+      return send(res, 200, {
+        kliekjes: VERSION, exported_at: now(), items, events: q.allEvents.all(), photos,
+      }, { 'Content-Disposition': `attachment; filename="kliekjes-${today()}.json"` });
+    }
+
+    if (p === '/api/import' && req.method === 'POST') {
+      const b = await readBody(req);
+      if (!b || !Array.isArray(b.items)) {
+        return send(res, 400, { error: 'Dit bestand bevat geen kliekjes.' });
+      }
+      let added = 0;
+      let skipped = 0;
+      for (const it of b.items) {
+        if (!it.id || q.getItem.get(it.id)) { skipped += 1; continue; }
+        let photo = null;
+        const raw = it.photo && b.photos ? b.photos[it.photo] : null;
+        if (raw) {
+          photo = `${crypto.randomUUID()}${path.extname(it.photo) || '.jpg'}`;
+          try {
+            fs.writeFileSync(path.join(PHOTO_DIR, photo), Buffer.from(raw, 'base64'));
+          } catch { photo = null; }
+        }
+        q.importItem.run(
+          String(it.id), str(it.name) || 'Naamloos', asCount(it.portions),
+          str(it.location), asDate(it.frozen_on) || today(), asDate(it.best_before),
+          str(it.notes), photo, str(it.created_by),
+          str(it.created_at) || now(), str(it.updated_at) || now(),
+          str(it.archived_at) || null,
+        );
+        added += 1;
+      }
+      if (Array.isArray(b.events)) {
+        for (const ev of b.events) {
+          if (!ev || !ev.item_id) continue;
+          q.addEvent.run(String(ev.item_id), str(ev.item_name), str(ev.action) || 'onbekend',
+            ev.amount === null || ev.amount === undefined ? null : asCount(ev.amount, 0),
+            str(ev.who), str(ev.at) || now());
+        }
+      }
+      return send(res, 200, { added, skipped });
     }
 
     if (p === '/api/events' && req.method === 'GET') {

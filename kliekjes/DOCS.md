@@ -52,6 +52,18 @@ ziet ze dezelfde lijst. Heeft ze nog geen account, maak er dan een aan onder
 Instellingen -> Personen. Haar naam wordt automatisch overgenomen bij het bijhouden van
 wie wat heeft ingevroren of opgegeten.
 
+## Overstappen of een back-up maken
+
+Onder Geschiedenis staan twee knoppen. **Exporteren** geeft je één JSON-bestand met
+alle kliekjes, de foto's en de historie erin. **Importeren** leest zo'n bestand weer in.
+
+Dat is de manier om over te stappen van de ene installatie naar de andere: exporteer
+in de oude, importeer in de nieuwe. Kliekjes die er al staan worden overgeslagen, dus
+je kunt hetzelfde bestand zonder risico twee keer inlezen.
+
+Let op dat een lokaal geïnstalleerde app en dezelfde app uit een repository ieder hun
+eigen opslag hebben; Home Assistant ziet ze als twee verschillende apps.
+
 ## Waar de data staat
 
 In de `/data`-map van de app, die Home Assistant zelf beheert: `kliekjes.db` met de
