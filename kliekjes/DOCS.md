@@ -45,12 +45,12 @@ duurt — hij haalt Node op en zet de boel in elkaar. Daarna Starten, en zet
 
 Klaar. Kliekjes staat nu in je zijbalk, ook in de Home Assistant-app op je telefoon.
 
-## Wat je vrouw moet doen
+## Meerdere gebruikers
 
-Niets bijzonders: als ze haar eigen Home Assistant-account heeft en daarmee inlogt,
-ziet ze dezelfde lijst. Heeft ze nog geen account, maak er dan een aan onder
-Instellingen -> Personen. Haar naam wordt automatisch overgenomen bij het bijhouden van
-wie wat heeft ingevroren of opgegeten.
+Iedereen met een eigen Home Assistant-account ziet dezelfde lijst; er is niets extra's
+in te stellen. Nieuwe accounts maak je aan onder Instellingen -> Personen. De naam van
+het account wordt automatisch overgenomen bij het bijhouden van wie wat heeft
+ingevroren of opgegeten.
 
 ## Overstappen of een back-up maken
 

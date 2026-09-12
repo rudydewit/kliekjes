@@ -1,7 +1,8 @@
 # Kliekjes
 
 Home Assistant-app om bij te houden wat er in de vriezer ligt: foto, aantal porties,
-plek, invriesdatum en "beste voor". Eén centrale database, meerdere telefoons.
+plek, invriesdatum en "beste voor". Eén centrale database, meerdere telefoons, zodat
+iedereen in huis dezelfde lijst ziet zonder de vriezer open te trekken.
 
 Deze repository is tegelijk een app-repository voor Home Assistant. Voeg hem toe en
 je krijgt updates gewoon via de app-store, in plaats van een map te kopiëren.
@@ -11,7 +12,7 @@ je krijgt updates gewoon via de app-store, in plaats van een map te kopiëren.
 1. Ga naar Instellingen → Apps → App Store.
 2. Kies rechtsboven onder de drie puntjes **Repositories**.
 3. Plak de URL van deze repository en klik op Toevoegen.
-4. Sluit het venster. Onderaan de lijst verschijnt **Kliekjes van Rudy** met de app erin.
+4. Sluit het venster. Onderaan de lijst verschijnt **Kliekjes** met de app erin.
 5. Installeren, starten, en "Weergeven in zijbalk" aanzetten.
 
 De eerste installatie bouwt het image op je eigen apparaat, wat een paar minuten duurt.
