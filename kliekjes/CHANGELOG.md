@@ -1,9 +1,13 @@
 # Wijzigingen
 
+## 1.0.10
+
+- Aanpassing teksten zodat deze zonder em-dashes zijn. 
+
 ## 1.0.9
 
 - Exporteren en importeren onder Geschiedenis. Eén bestand met alle kliekjes, foto's
-  en historie — bedoeld om over te stappen naar een andere installatie, en verder
+  en historie. Bedoeld om over te stappen naar een andere installatie, en verder
   bruikbaar als losse back-up.
 - Importeren slaat kliekjes over die er al staan, dus twee keer importeren kan geen
   kwaad.
@@ -19,7 +23,7 @@
 ## 1.0.7
 
 - Versienummer in de URL van de stylesheet en het script. Een browser kan nu nooit
-  meer een oude `app.js` met een nieuwe `index.html` combineren — dat gaf een leeg
+  meer een oude `app.js` met een nieuwe `index.html` combineren, en dat gaf een leeg
   scherm.
 - Gaat er tijdens het opstarten toch iets mis, dan verschijnt een melding met de
   oorzaak in plaats van een lege achtergrond.

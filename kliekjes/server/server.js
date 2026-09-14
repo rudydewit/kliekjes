@@ -11,7 +11,7 @@ const DATA_DIR = process.env.DATA_DIR || '/data';
 const PHOTO_DIR = path.join(DATA_DIR, 'photos');
 const PUBLIC_DIR = path.join(__dirname, '..', 'public');
 const MAX_BODY = 64 * 1024 * 1024;
-const VERSION = '1.0.9';
+const VERSION = '1.0.10';
 
 // Home Assistant stuurt ingress-verkeer altijd vanaf dit interne adres.
 const INGRESS_IP = process.env.TRUSTED_INGRESS_IP || '172.30.32.2';
@@ -32,7 +32,7 @@ const PASSWORD = process.env.APP_PASSWORD || OPTIONS.password || '';
 fs.mkdirSync(PHOTO_DIR, { recursive: true });
 
 if (!PASSWORD) {
-  console.warn('Geen wachtwoord ingesteld — alleen bereikbaar via de Home Assistant-zijbalk.');
+  console.warn('Geen wachtwoord ingesteld. Alleen bereikbaar via de Home Assistant-zijbalk.');
 }
 
 /* ---------------------------------------------------------------- database */

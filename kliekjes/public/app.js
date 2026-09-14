@@ -26,7 +26,7 @@ function daysBetween(a, b) {
 }
 
 function fmtDate(s) {
-  if (!s) return '—';
+  if (!s) return '-';
   return new Date(s + 'T12:00:00').toLocaleDateString('nl-NL', { day: 'numeric', month: 'short', year: '2-digit' });
 }
 
@@ -183,7 +183,7 @@ function openDetail(id) {
       : '<button class="btn btn-primary" id="take-btn">Eén portie eruit</button>'}`;
 
   $('#detail-body').querySelector('.detail-name').textContent = item.name;
-  $('#detail-body').querySelector('.v-loc').textContent = item.location || '—';
+  $('#detail-body').querySelector('.v-loc').textContent = item.location || '-';
   if (item.notes) $('#detail-body').querySelector('.v-notes').textContent = item.notes;
   if (item.created_by) $('#detail-body').querySelector('.v-by').textContent = item.created_by;
 
@@ -283,7 +283,7 @@ $('#btn-gallery').addEventListener('click', () => $('#photo-gallery').click());
 /* ------------------------------------------------------------ camera ---
    Het capture-attribuut is een verzoek dat Android mag negeren; dan krijg je
    alsnog de fotokiezer. Met getUserMedia openen we de camera zelf. Dat vereist
-   wel een beveiligde verbinding (https of localhost) — lukt het niet, dan
+   wel een beveiligde verbinding (https of localhost). Lukt dat niet, dan
    vallen we terug op het invoerveld. */
 
 let camStream = null;

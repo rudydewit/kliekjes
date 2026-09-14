@@ -44,7 +44,7 @@ geschiedenisscherm in de app komt uit `server.js`, dus daaraan zie je wat er ech
 De repository moet openbaar zijn om hem zo toe te kunnen voegen. Dat kan hier veilig:
 er staan geen wachtwoorden of sleutels in de code. Het wachtwoord van de app stel je in
 bij de app-instellingen in Home Assistant, en dat belandt in `/data/options.json` op je
-eigen apparaat — niet in deze repository.
+eigen apparaat, niet in deze repository.
 
 De `.gitignore` houdt `kliekjes/data/` buiten de deur, waar de database en de foto's
 staan als je hem lokaal draait.

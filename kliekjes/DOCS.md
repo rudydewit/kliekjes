@@ -4,7 +4,7 @@ Bijhouden wat er in de vriezer ligt: foto, aantal porties, plek, invriesdatum en
 "beste voor". Eén centrale database, twee telefoons.
 
 Draait als **app** in Home Assistant (tot versie 2026.2 heette dat een add-on) en
-verschijnt in je zijbalk. Wie in Home Assistant is ingelogd, is ook hier binnen —
+verschijnt in je zijbalk. Wie in Home Assistant is ingelogd, is ook hier binnen:
 geen apart wachtwoord, geen extra subdomein.
 
 ## Installeren
@@ -20,7 +20,7 @@ kopiëren.
 
 **1. Zet de map op je Pi.**
 
-De map moet als `kliekjes` in de `addons`-map komen — dat is de lokale app-repository.
+De map moet als `kliekjes` in de `addons`-map komen, want dat is de lokale app-repository.
 Met de Samba Share-app kom je erbij via `\\homeassistant\addons` in Verkenner. Met de
 Terminal & SSH-app kan het ook:
 
@@ -40,7 +40,7 @@ Ga naar Instellingen -> Apps -> App Store, en kies rechtsboven onder de drie pun
 **3. Installeren.**
 
 Klik op Installeren. De eerste keer bouwt je Pi het image zelf, wat een paar minuten
-duurt — hij haalt Node op en zet de boel in elkaar. Daarna Starten, en zet
+duurt. Hij haalt Node op en zet de boel in elkaar. Daarna Starten, en zet
 "Weergeven in zijbalk" aan.
 
 Klaar. Kliekjes staat nu in je zijbalk, ook in de Home Assistant-app op je telefoon.
@@ -75,7 +75,7 @@ Assistant-back-ups**, dus je hoeft niets apart te regelen.
 De knop "Foto maken" opent de camera binnen de app. Daarvoor is een beveiligde
 verbinding nodig: `https://...` of `localhost`. Open je Home Assistant op een
 `http://`-adres in je eigen netwerk, dan staat de camera-API van de browser uit en
-valt de knop terug op de fotokiezer van Android — met een melding erbij.
+valt de knop terug op de fotokiezer van Android, met een melding erbij.
 
 Wil je de camera lokaal ook rechtstreeks, benader Home Assistant dan via je
 https-adres in plaats van het IP-adres. "Uit galerij" werkt in alle gevallen.
@@ -84,7 +84,7 @@ https-adres in plaats van het IP-adres. "Uit galerij" werkt in alle gevallen.
 
 Omdat de app binnen Home Assistant draait, gebruik je hem via de HA-app of de
 webinterface. Je krijgt dus geen eigen icoon op je startscherm, en de offline-modus
-werkt niet — het ingress-adres verandert per sessie, dus een service worker heeft daar
+werkt niet. Het ingress-adres verandert per sessie, dus een service worker heeft daar
 geen zin.
 
 Wil je dat wel, dan kun je er een vaste poort naast zetten. Voeg aan `config.yaml` toe:
@@ -94,7 +94,7 @@ ports:
   3000/tcp: 3011
 ```
 
-Vul dan ook een wachtwoord in bij de app-instellingen — zonder ingress is dat je enige
+Vul dan ook een wachtwoord in bij de app-instellingen, want zonder ingress is dat je enige
 slot. Daarna is hij te bereiken op `http://<ip-van-je-pi>:3011`, en via je reverse proxy
 met HTTPS kun je hem als PWA op je startscherm zetten. Beide routes werken tegelijk en
 delen dezelfde database.
@@ -130,12 +130,12 @@ Hij luistert dan op poort 3011 en de data komt in `./data`.
 
 Na een wijziging: hoog het `version`-nummer in `config.yaml` op, dan biedt Home Assistant
 een update aan. Zonder die ophoging ziet hij geen verschil. Biedt hij ondanks een hoger
-nummer niets aan, verwijder de app dan en installeer hem opnieuw — dat forceert een
+nummer niets aan, verwijder de app dan en installeer hem opnieuw. Dat forceert een
 schone build.
 
 ## Kopieren vanaf een Mac
 
-De Samba-app weigert standaard bestandsnamen die op `icon?` lijken — vijf tekens
+De Samba-app weigert standaard bestandsnamen die op `icon?` lijken: vijf tekens
 beginnend met "icon". Een map `icons` valt daar precies onder, vandaar dat de
 iconen hier in `public/img/` staan. Loop je toch tegen een geweigerd bestand aan,
 dan kun je het patroon uit `veto_files` in de configuratie van de Samba-app halen.
@@ -152,10 +152,10 @@ een ander basisimage nodig.
 
 Het basisimage staat bewust rechtstreeks in de Dockerfile. Een `build.yaml` wordt door
 de Supervisor niet meer gelezen, en zonder `FROM` in de Dockerfile krijg je zijn eigen
-basisimage — waar geen Node in zit.
+basisimage, waar geen Node in zit.
 
 **Beveiliging.** Via de zijbalk regelt Home Assistant de toegang; de app accepteert alleen
 verkeer dat van de Supervisor komt (het interne adres 172.30.32.2), dus een nagebootste
 header van buitenaf komt er niet doorheen. Zet je er een poort naast, dan is er één
-gedeeld wachtwoord zonder rate limiting — prima achter je eigen HTTPS-proxy, maar zet dat
+gedeeld wachtwoord zonder rate limiting. Prima achter je eigen HTTPS-proxy, maar zet dat
 niet zomaar open op internet.
