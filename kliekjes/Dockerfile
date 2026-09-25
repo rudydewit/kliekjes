@@ -5,7 +5,7 @@ FROM node:24-alpine
 LABEL io.hass.name="Kliekjes" \
       io.hass.description="Bijhouden wat er in de vriezer ligt, met foto's" \
       io.hass.type="addon" \
-      io.hass.version="1.0.10"
+      io.hass.version="1.0.11"
 
 WORKDIR /app
 COPY server ./server
