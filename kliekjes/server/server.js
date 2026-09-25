@@ -11,7 +11,7 @@ const DATA_DIR = process.env.DATA_DIR || '/data';
 const PHOTO_DIR = path.join(DATA_DIR, 'photos');
 const PUBLIC_DIR = path.join(__dirname, '..', 'public');
 const MAX_BODY = 64 * 1024 * 1024;
-const VERSION = '1.0.10';
+const VERSION = '1.0.11';
 
 // Home Assistant stuurt ingress-verkeer altijd vanaf dit interne adres.
 const INGRESS_IP = process.env.TRUSTED_INGRESS_IP || '172.30.32.2';
@@ -177,6 +177,15 @@ function dropPhoto(name) {
 const str = (v, fallback = '') => (typeof v === 'string' ? v.trim() : fallback);
 const today = () => new Date().toISOString().slice(0, 10);
 const asDate = (v) => (/^\d{4}-\d{2}-\d{2}$/.test(str(v)) ? str(v) : null);
+/* De routes verwachten een UUID. Een ander id uit een importbestand wordt er
+   deterministisch een, zodat opnieuw importeren nog steeds dubbelen overslaat. */
+function importId(v) {
+  const s = String(v);
+  if (/^[0-9a-f-]{36}$/.test(s)) return s;
+  const h = crypto.createHash('sha256').update(s).digest('hex');
+  return `${h.slice(0, 8)}-${h.slice(8, 12)}-${h.slice(12, 16)}-${h.slice(16, 20)}-${h.slice(20, 32)}`;
+}
+
 const asCount = (v, fallback = 1) => {
   const n = Math.round(Number(v));
   return Number.isFinite(n) && n >= 0 && n <= 999 ? n : fallback;
@@ -301,11 +310,13 @@ const server = http.createServer(async (req, res) => {
     if (itemMatch) {
       const id = itemMatch[1];
       const action = itemMatch[2];
+      // Body eerst: na deze await loopt alles synchroon, dus geen verouderd item bij gelijktijdige verzoeken.
+      const b = req.method === 'POST' || req.method === 'PATCH' ? await readBody(req) : {};
       const item = q.getItem.get(id);
       if (!item) return send(res, 404, { error: 'Dit kliekje bestaat niet meer.' });
 
       if (action === '/take' && req.method === 'POST') {
-        const b = await readBody(req);
+        if (item.archived_at) return send(res, 409, { error: 'Dit kliekje is al op.' });
         const amount = Math.max(1, asCount(b.amount, 1));
         const left = Math.max(0, item.portions - amount);
         const ts = now();
@@ -316,7 +327,6 @@ const server = http.createServer(async (req, res) => {
       }
 
       if (action === '/restore' && req.method === 'POST') {
-        const b = await readBody(req);
         const ts = now();
         q.unarchive.run(Math.max(1, asCount(b.portions, 1)), ts, id);
         q.addEvent.run(id, item.name, 'teruggezet', null, str(b.who), ts);
@@ -324,7 +334,6 @@ const server = http.createServer(async (req, res) => {
       }
 
       if (!action && req.method === 'PATCH') {
-        const b = await readBody(req);
         let photo = item.photo;
         if (b.photo === null) { dropPhoto(photo); photo = null; }
         else if (typeof b.photo === 'string' && b.photo.startsWith('data:')) {
@@ -355,15 +364,15 @@ const server = http.createServer(async (req, res) => {
     /* --- alles eruit / alles erin -------------------------------------- */
     if (p === '/api/export' && req.method === 'GET') {
       const items = q.allItems.all();
+      const events = q.allEvents.all();
       const photos = {};
-      for (const it of items) {
-        if (!it.photo) continue;
+      await Promise.all(items.filter((it) => it.photo).map(async (it) => {
         try {
-          photos[it.photo] = fs.readFileSync(path.join(PHOTO_DIR, it.photo)).toString('base64');
+          photos[it.photo] = (await fs.promises.readFile(path.join(PHOTO_DIR, it.photo))).toString('base64');
         } catch { /* foto weg: de rest gaat gewoon mee */ }
-      }
+      }));
       return send(res, 200, {
-        kliekjes: VERSION, exported_at: now(), items, events: q.allEvents.all(), photos,
+        kliekjes: VERSION, exported_at: now(), items, events, photos,
       }, { 'Content-Disposition': `attachment; filename="kliekjes-${today()}.json"` });
     }
 
@@ -375,7 +384,9 @@ const server = http.createServer(async (req, res) => {
       let added = 0;
       let skipped = 0;
       for (const it of b.items) {
-        if (!it.id || q.getItem.get(it.id)) { skipped += 1; continue; }
+        if (!it.id) { skipped += 1; continue; }
+        const id = importId(it.id);
+        if (q.getItem.get(id)) { skipped += 1; continue; }
         let photo = null;
         const raw = it.photo && b.photos ? b.photos[it.photo] : null;
         if (raw) {
@@ -385,7 +396,7 @@ const server = http.createServer(async (req, res) => {
           } catch { photo = null; }
         }
         q.importItem.run(
-          String(it.id), str(it.name) || 'Naamloos', asCount(it.portions),
+          id, str(it.name) || 'Naamloos', asCount(it.portions),
           str(it.location), asDate(it.frozen_on) || today(), asDate(it.best_before),
           str(it.notes), photo, str(it.created_by),
           str(it.created_at) || now(), str(it.updated_at) || now(),
@@ -396,7 +407,7 @@ const server = http.createServer(async (req, res) => {
       if (Array.isArray(b.events)) {
         for (const ev of b.events) {
           if (!ev || !ev.item_id) continue;
-          q.addEvent.run(String(ev.item_id), str(ev.item_name), str(ev.action) || 'onbekend',
+          q.addEvent.run(importId(ev.item_id), str(ev.item_name), str(ev.action) || 'onbekend',
             ev.amount === null || ev.amount === undefined ? null : asCount(ev.amount, 0),
             str(ev.who), str(ev.at) || now());
         }

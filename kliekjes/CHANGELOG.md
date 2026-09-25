@@ -1,5 +1,19 @@
 # Wijzigingen
 
+## 1.0.11
+
+- De "beste voor"-snelknoppen rekenden vanaf de 29e, 30e of 31e door naar de maand
+  erna: 31 januari plus een maand werd 3 maart. Dat wordt nu 28 februari.
+- Twee keer snel op "Eén portie eruit" tikken kon een portie laten verdwijnen uit de
+  telling. De knop gaat nu uit tijdens het verzoek, en de server telt gelijktijdige
+  verzoeken goed op. Een kliekje dat al op is, kan niet nog eens op.
+- Een importbestand met een ander soort id gaf kliekjes die je daarna niet meer kon
+  opeten, wijzigen of verwijderen. Zulke id's worden nu omgezet.
+- Wie er ingelogd is in Home Assistant, bepaalt nu altijd de naam in de historie. Op
+  een gedeeld apparaat bleef eerst de naam van de vorige gebruiker hangen.
+- Exporteren leest de foto's nu op de achtergrond in. Bij een volle vriezer bleef de
+  app tijdens het exporteren voor iedereen hangen.
+
 ## 1.0.10
 
 - Aanpassing teksten zodat deze zonder em-dashes zijn. 

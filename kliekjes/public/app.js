@@ -15,10 +15,11 @@ const state = { items: [], archived: [], who: localStorage.getItem('who') || '',
 const MS_DAY = 86400000;
 const todayStr = () => new Date().toISOString().slice(0, 10);
 
+// 31 januari + 1 maand wordt 28 februari, niet 3 maart.
 function addMonths(dateStr, months) {
-  const d = new Date(dateStr + 'T12:00:00');
-  d.setMonth(d.getMonth() + months);
-  return d.toISOString().slice(0, 10);
+  const [y, m, d] = dateStr.split('-').map(Number);
+  const lastDay = new Date(Date.UTC(y, m + months, 0)).getUTCDate();
+  return new Date(Date.UTC(y, m - 1 + months, Math.min(d, lastDay))).toISOString().slice(0, 10);
 }
 
 function daysBetween(a, b) {
@@ -66,7 +67,7 @@ async function api(path, options = {}) {
 
 async function boot() {
   const session = await api('api/session').catch(() => ({ authed: false }));
-  if (session.who && !state.who) {
+  if (session.who) {
     state.who = session.who;
     localStorage.setItem('who', session.who);
   }
@@ -188,14 +189,15 @@ function openDetail(id) {
   if (item.created_by) $('#detail-body').querySelector('.v-by').textContent = item.created_by;
 
   const take = $('#take-btn');
-  if (take) take.addEventListener('click', () => takePortion(item));
+  if (take) take.addEventListener('click', () => takePortion(item, take));
   const restore = $('#restore-btn');
   if (restore) restore.addEventListener('click', () => restoreItem(item));
 
   open(el.detail);
 }
 
-async function takePortion(item) {
+async function takePortion(item, btn) {
+  btn.disabled = true;
   try {
     const { item: updated } = await api(`api/items/${item.id}/take`, {
       method: 'POST', body: { amount: 1, who: state.who },
@@ -205,7 +207,10 @@ async function takePortion(item) {
     toast(updated.archived_at
       ? `${item.name} is op.`
       : `Nog ${updated.portions} ${updated.portions === 1 ? 'portie' : 'porties'} ${item.name}.`);
-  } catch (err) { toast(err.message); }
+  } catch (err) {
+    btn.disabled = false;
+    toast(err.message);
+  }
 }
 
 async function restoreItem(item) {
@@ -324,14 +329,12 @@ function closeCamera() {
   close($('#camera'));
 }
 
-function grabFrame(video, max = 1280, quality = 0.75) {
-  const w = video.videoWidth;
-  const h = video.videoHeight;
+function toJpeg(source, w, h, max = 1280, quality = 0.75) {
   const scale = Math.min(1, max / Math.max(w, h));
   const canvas = document.createElement('canvas');
   canvas.width = Math.round(w * scale);
   canvas.height = Math.round(h * scale);
-  canvas.getContext('2d').drawImage(video, 0, 0, canvas.width, canvas.height);
+  canvas.getContext('2d').drawImage(source, 0, 0, canvas.width, canvas.height);
   return canvas.toDataURL('image/jpeg', quality);
 }
 
@@ -341,7 +344,7 @@ $('#cam-cancel').addEventListener('click', closeCamera);
 $('#cam-shoot').addEventListener('click', () => {
   const video = $('#cam-video');
   if (!video.videoWidth) return toast('De camera is nog aan het opstarten.');
-  state.photo = grabFrame(video);
+  state.photo = toJpeg(video, video.videoWidth, video.videoHeight);
   setPreview(state.photo);
   closeCamera();
 });
@@ -354,17 +357,12 @@ $('#cam-flip').addEventListener('click', async () => {
 
 $('#photo-clear').addEventListener('click', () => { state.photo = null; setPreview(null); });
 
-function shrink(file, max = 1280, quality = 0.75) {
+function shrink(file) {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.onload = () => {
-      const scale = Math.min(1, max / Math.max(img.width, img.height));
-      const canvas = document.createElement('canvas');
-      canvas.width = Math.round(img.width * scale);
-      canvas.height = Math.round(img.height * scale);
-      canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
       URL.revokeObjectURL(img.src);
-      resolve(canvas.toDataURL('image/jpeg', quality));
+      resolve(toJpeg(img, img.width, img.height));
     };
     img.onerror = reject;
     img.src = URL.createObjectURL(file);
